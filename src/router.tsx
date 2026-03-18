@@ -1,7 +1,7 @@
 import React from 'react';
 import {BrowserRouter as Router, Route} from 'react-router-dom';
 
-const Connector = React.lazy(() => import('./connector/Connector'));
+const ConfigPopup = React.lazy(() => import('./components/ConfigPopup'));
 
 const t = window.TrelloPowerUp.iframe({
     appKey: process.env.POWERUP_APP_KEY,
@@ -13,7 +13,7 @@ function PowerupRouter() {
         <React.Suspense fallback={<div style={{ margin: '6px' }}>Loading...</div>}>
             <Router basename={process.env.CONTEXT_PATH || undefined}>
                 <Route path="/">
-                    <Connector />
+                    <ConfigPopup t={t} />
                 </Route>
             </Router>
         </React.Suspense>

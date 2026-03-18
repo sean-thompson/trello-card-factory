@@ -21,7 +21,8 @@ module.exports = (env: any) => {
         },
         entry: {
             capabilities: resolveApp(path.join('src', 'capabilities.ts')),
-            addon: resolveApp(path.join('src', 'addon.tsx'))
+            addon: resolveApp(path.join('src', 'addon.tsx')),
+            attachmentSection: resolveApp(path.join('src', 'attachment-section.tsx')),
         },
         module: {
             rules: [
@@ -100,6 +101,16 @@ module.exports = (env: any) => {
                 template: 'templates/react.hbs',
                 favicon: 'static/favicon.png',
                 filename: 'connector.html',
+                templateParameters: {
+                    powerup_name: process.env.POWERUP_NAME,
+                    powerup_app_key: process.env.POWERUP_APP_KEY
+                }
+            }),
+            new HtmlWebpackPlugin({
+                chunks: ['attachmentSection'],
+                template: 'templates/react.hbs',
+                favicon: 'static/favicon.png',
+                filename: 'attachment-section.html',
                 templateParameters: {
                     powerup_name: process.env.POWERUP_NAME,
                     powerup_app_key: process.env.POWERUP_APP_KEY
