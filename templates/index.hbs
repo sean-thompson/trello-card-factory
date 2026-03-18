@@ -1,0 +1,24 @@
+<!-- This is the power-up root, used to integrate with the Trello UI -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{powerup_name}}</title>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css"/>
+</head>
+<body>
+<div style="margin: 25px; font-size: 1.2rem;">
+    <h1 style="margin-top: 25px">{{powerup_name}}</h1>
+    <p>This is the root of the Power-Up. Trello uses this to start your Power-Up and show UI elements.</p>
+    <div style="padding: 10px 0;">
+        <h2>Getting Started</h2>
+        <div style="padding: 6px 12px;">
+            <p>1. Go to <a href="https://trello.com/power-ups/admin">Power-Up Admin</a> and set the iframe connector URL</p>
+            <p>2. Enable the capabilities you want to expose</p>
+            <p>3. Add the Power-Up to a board via the Power-Ups menu</p>
+        </div>
+    </div>
+</div>
+<script src="https://p.trellocdn.com/power-up.min.js?key={{powerup_app_key}}"></script>
+</body>
+</html>
