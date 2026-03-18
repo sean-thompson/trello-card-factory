@@ -6,12 +6,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const dev = process.env.NODE_ENV !== 'production';
-
 const appDirectory = fs.realpathSync(process.cwd());
 const resolveApp = (relativePath: string) => path.resolve(appDirectory, relativePath);
 
 module.exports = (env: any) => {
+    const dev = !env.WEBPACK_BUILD;
     return ({
         output: {
             path: resolveApp('dist'),
