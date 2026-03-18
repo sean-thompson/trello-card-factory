@@ -92,6 +92,17 @@ export async function setCustomFieldValue(
     if (!res.ok) throw new Error(`Failed to set custom field: ${res.status}`);
 }
 
+export async function getAttachment(
+    token: string,
+    appKey: string,
+    cardId: string,
+    attachmentId: string
+): Promise<any> {
+    const res = await fetch(apiUrl(`/cards/${cardId}/attachments/${attachmentId}`, token, appKey));
+    if (!res.ok) throw new Error(`Failed to get attachment: ${res.status}`);
+    return res.json();
+}
+
 export async function addAttachment(
     token: string,
     appKey: string,
@@ -99,13 +110,41 @@ export async function addAttachment(
     attachmentUrl: string,
     name: string
 ): Promise<any> {
+    const formData = new FormData();
+    formData.append('url', attachmentUrl);
+    formData.append('name', name);
+
     const res = await fetch(apiUrl(`/cards/${cardId}/attachments`, token, appKey), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: attachmentUrl, name }),
+        body: formData,
     });
-    if (!res.ok) throw new Error(`Failed to add attachment: ${res.status}`);
+    if (!res.ok) {
+        const errorBody = await res.text();
+        throw new Error(`Failed to add attachment: ${res.status} - ${errorBody}`);
+    }
     return res.json();
+}
+
+export async function setCardCover(
+    token: string,
+    appKey: string,
+    cardId: string,
+    attachmentId: string
+): Promise<void> {
+    const res = await fetch(apiUrl(`/cards/${cardId}`, token, appKey), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            cover: {
+                idAttachment: attachmentId,
+                size: 'full',
+            }
+        }),
+    });
+    if (!res.ok) {
+        const errorBody = await res.text();
+        console.warn('[Card Factory] Failed to set cover:', errorBody);
+    }
 }
 
 export async function deleteAttachment(
