@@ -101,7 +101,6 @@ export async function uploadAttachment(
 ): Promise<any> {
     const formData = new FormData();
     formData.append('file', file, name);
-    formData.append('setCover', 'true');
 
     const res = await fetch(apiUrl(`/cards/${cardId}/attachments`, token, appKey), {
         method: 'POST',
@@ -112,6 +111,24 @@ export async function uploadAttachment(
         throw new Error(`Failed to upload attachment: ${res.status} - ${errorBody}`);
     }
     return res.json();
+}
+
+export async function setCardCover(
+    token: string,
+    appKey: string,
+    cardId: string,
+    attachmentId: string
+): Promise<void> {
+    const res = await fetch(apiUrl(`/cards/${cardId}`, token, appKey), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            cover: { idAttachment: attachmentId, size: 'full' }
+        }),
+    });
+    if (!res.ok) {
+        console.warn('[Card Factory] Failed to set cover, continuing without it');
+    }
 }
 
 export async function deleteAttachment(

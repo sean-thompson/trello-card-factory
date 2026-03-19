@@ -93,8 +93,13 @@ export async function createCardFromFactory(params: {
     }
     const imageBlob = await imageRes.blob();
 
-    // Upload as a real file to the new card (with cover)
-    await api.uploadAttachment(token, appKey, newCard.id, imageBlob, attachmentName);
+    // Upload as a real file to the new card
+    const newAttachment = await api.uploadAttachment(token, appKey, newCard.id, imageBlob, attachmentName);
+
+    // Set the image as the card cover
+    if (newAttachment && newAttachment.id) {
+        await api.setCardCover(token, appKey, newCard.id, newAttachment.id);
+    }
 
     // Remove the image from the factory card
     await api.deleteAttachment(token, appKey, factoryCardId, attachmentId);
