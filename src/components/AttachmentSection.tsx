@@ -52,21 +52,9 @@ function AttachmentSection({t}: Props) {
         }
     }
 
-    async function handleDismiss() {
-        if (!attachmentId) return;
-        setBusy(true);
-        try {
-            await markAttachmentProcessed(t, attachmentId);
-            setDone(true);
-        } catch (err) {
-            console.error('Failed to dismiss:', err);
-            setBusy(false);
-        }
-    }
-
     if (done) {
         return (
-            <div id="attachment-section-root" style={{padding: '8px 0', fontSize: '13px', color: '#5e6c84'}}>
+            <div id="attachment-section-root" style={{fontSize: '13px', color: '#5e6c84'}}>
                 Done
             </div>
         );
@@ -79,8 +67,7 @@ function AttachmentSection({t}: Props) {
             style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '6px 0',
+                gap: '6px',
             }}
         >
             <input
@@ -91,10 +78,13 @@ function AttachmentSection({t}: Props) {
                 placeholder="Card name"
                 style={{
                     flex: 1,
-                    padding: '4px 8px',
+                    height: '24px',
+                    padding: '0 6px',
+                    margin: 0,
                     fontSize: '14px',
                     border: '1px solid #dfe1e6',
                     borderRadius: '3px',
+                    boxSizing: 'border-box',
                 }}
             />
             <button
@@ -102,7 +92,9 @@ function AttachmentSection({t}: Props) {
                 disabled={busy || !cardName.trim()}
                 title="Create card"
                 style={{
-                    padding: '4px 12px',
+                    height: '24px',
+                    padding: '0 10px',
+                    margin: 0,
                     fontSize: '14px',
                     backgroundColor: '#5aac44',
                     color: '#fff',
@@ -113,22 +105,6 @@ function AttachmentSection({t}: Props) {
                 }}
             >
                 {busy ? '...' : '\u2713'}
-            </button>
-            <button
-                onClick={handleDismiss}
-                disabled={busy}
-                title="Dismiss"
-                style={{
-                    padding: '4px 8px',
-                    fontSize: '14px',
-                    backgroundColor: 'transparent',
-                    color: '#6b778c',
-                    border: '1px solid #dfe1e6',
-                    borderRadius: '3px',
-                    cursor: busy ? 'wait' : 'pointer',
-                }}
-            >
-                {'\u2717'}
             </button>
         </div>
     );

@@ -53,7 +53,7 @@ window.TrelloPowerUp.initialize({
                     attachmentName: attachment.name,
                     attachmentUrl: attachment.url,
                 }),
-                height: 50,
+                height: 24,
             }
         }));
     },
