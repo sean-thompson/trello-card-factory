@@ -3,6 +3,7 @@ import {Trello} from '../types/trello';
 import {getFactoryConfig, markAttachmentProcessed} from '../lib/factory-config';
 import {cleanFilenameForCardName} from '../lib/attachment-utils';
 import {createCardFromFactory} from '../lib/card-creator';
+import './attachment-section.css';
 
 interface Props {
     t: Trello.PowerUp.IFrame;
@@ -81,7 +82,6 @@ function AttachmentSection({t}: Props) {
                     height: '32px',
                     padding: '0 6px',
                     margin: 0,
-                    fontSize: '14px',
                     border: '1px solid #dfe1e6',
                     borderRadius: '3px',
                     boxSizing: 'border-box',
@@ -95,7 +95,6 @@ function AttachmentSection({t}: Props) {
                     height: '32px',
                     padding: '0 24px',
                     margin: 0,
-                    fontSize: '14px',
                     backgroundColor: '#5aac44',
                     color: '#fff',
                     border: 'none',

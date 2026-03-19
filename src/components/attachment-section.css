@@ -1,0 +1,8 @@
+#attachment-section-root input,
+#attachment-section-root button {
+    font-family: 'Atlassian Sans', sans-serif !important;
+    font-style: normal !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    line-height: 20px !important;
+}
