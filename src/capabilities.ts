@@ -1,5 +1,11 @@
-import {ICON, STORAGE_KEY_FACTORY, STORAGE_KEY_PROCESSED} from './lib/constants';
+import {STORAGE_KEY_FACTORY, STORAGE_KEY_PROCESSED} from './lib/constants';
 import {isImageAttachment} from './lib/attachment-utils';
+
+const BASE_URL = window.location.href.replace(/\/$/, '');
+const ICON = {
+    dark: BASE_URL + '/static/icon-dark.png',
+    light: BASE_URL + '/static/icon-light.png',
+};
 
 window.TrelloPowerUp.initialize({
     'card-buttons': (t: any) => {
