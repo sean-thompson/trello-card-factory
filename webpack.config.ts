@@ -76,6 +76,7 @@ module.exports = (env: any) => {
                 'POWERUP_ID': undefined,
                 'POWERUP_APP_KEY': undefined,
                 'CONTEXT_PATH': undefined,
+                'TRELLO_IMAGE_PROXY_URL': '',
             }),
             new CopyWebpackPlugin({
                 patterns: [

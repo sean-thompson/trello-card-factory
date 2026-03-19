@@ -12,6 +12,7 @@ jobs:
       CONTEXT_PATH: /
       POWERUP_ID: UNSPECIFIED
       POWERUP_APP_KEY: ${{ secrets.POWERUP_APP_KEY }}
+      TRELLO_IMAGE_PROXY_URL: ${{ vars.TRELLO_IMAGE_PROXY_URL }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

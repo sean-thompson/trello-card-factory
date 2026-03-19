@@ -84,8 +84,9 @@ export async function createCardFromFactory(params: {
         }
     }
 
-    // Download the image via our server-side proxy (avoids CORS)
-    const proxyUrl = `/trello-image?url=${encodeURIComponent(attachmentUrl)}&token=${encodeURIComponent(token)}`;
+    // Download the image via proxy (local /trello-image or production Worker)
+    const proxyBase = process.env.TRELLO_IMAGE_PROXY_URL || '/trello-image';
+    const proxyUrl = `${proxyBase}?url=${encodeURIComponent(attachmentUrl)}&token=${encodeURIComponent(token)}`;
     const imageRes = await fetch(proxyUrl);
     if (!imageRes.ok) {
         throw new Error(`Failed to download image via proxy: ${imageRes.status}`);
