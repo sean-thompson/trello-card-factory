@@ -78,7 +78,12 @@ export async function createCardFromFactory(params: {
     // Copy selected custom fields
     if (hasCustomFields && sourceCard.customFieldItems?.length) {
         for (const field of sourceCard.customFieldItems) {
-            if (field.value && selectedCustomFieldIds.includes(field.idCustomField)) {
+            if (!selectedCustomFieldIds.includes(field.idCustomField)) continue;
+            if (field.idValue) {
+                // Dropdown/list fields use idValue
+                await api.setCustomFieldValue(token, appKey, newCard.id, field.idCustomField, undefined, field.idValue);
+            } else if (field.value && Object.keys(field.value).length > 0) {
+                // Text, number, date, checkbox fields use value
                 await api.setCustomFieldValue(token, appKey, newCard.id, field.idCustomField, field.value);
             }
         }

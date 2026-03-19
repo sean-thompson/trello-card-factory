@@ -82,12 +82,19 @@ export async function setCustomFieldValue(
     appKey: string,
     cardId: string,
     customFieldId: string,
-    value: Record<string, unknown>
+    value?: Record<string, unknown>,
+    idValue?: string
 ): Promise<void> {
+    const body: Record<string, unknown> = {};
+    if (idValue) {
+        body.idValue = idValue;
+    } else if (value) {
+        body.value = value;
+    }
     const res = await fetch(apiUrl(`/cards/${cardId}/customField/${customFieldId}/item`, token, appKey), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value }),
+        body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`Failed to set custom field: ${res.status}`);
 }
