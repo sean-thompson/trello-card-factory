@@ -14,14 +14,28 @@ export const IMAGE_EXTENSIONS = [
     '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff',
 ];
 
-export const COPYABLE_ATTRIBUTE_LABELS: Record<CopyableAttribute, string> = {
-    labels: 'Labels',
-    members: 'Members',
-    description: 'Description',
-    due: 'Due Date',
-    checklists: 'Checklists',
-    customFields: 'Custom Fields',
-};
+export interface AttributeGroup {
+    label: string;
+    attributes: { key: CopyableAttribute; label: string }[];
+}
+
+export const ATTRIBUTE_GROUPS: AttributeGroup[] = [
+    {
+        label: 'Copy',
+        attributes: [
+            { key: 'labels', label: 'Labels' },
+            { key: 'description', label: 'Description' },
+        ],
+    },
+    {
+        label: 'Details',
+        attributes: [
+            { key: 'members', label: 'Members' },
+            { key: 'due', label: 'Due Date' },
+            { key: 'checklists', label: 'Checklists' },
+        ],
+    },
+];
 
 export const DEFAULT_COPY_ATTRIBUTES: CopyableAttribute[] = [
     'labels',

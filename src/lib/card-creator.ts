@@ -29,9 +29,14 @@ export async function createCardFromFactory(params: {
     if (config.copyAttributes.includes('members')) fields.push('idMembers');
     if (config.copyAttributes.includes('due')) fields.push('due', 'dueComplete');
 
+    const selectedCustomFieldIds = config.copyAttributes
+        .filter(a => a.startsWith('customField:'))
+        .map(a => a.replace('customField:', ''));
+    const hasCustomFields = selectedCustomFieldIds.length > 0;
+
     const sourceCard = await api.getCardData(token, appKey, factoryCardId, fields, {
         checklists: config.copyAttributes.includes('checklists'),
-        customFieldItems: config.copyAttributes.includes('customFields'),
+        customFieldItems: hasCustomFields,
     });
 
     // Resolve destination list
@@ -70,10 +75,10 @@ export async function createCardFromFactory(params: {
         }
     }
 
-    // Copy custom fields
-    if (config.copyAttributes.includes('customFields') && sourceCard.customFieldItems?.length) {
+    // Copy selected custom fields
+    if (hasCustomFields && sourceCard.customFieldItems?.length) {
         for (const field of sourceCard.customFieldItems) {
-            if (field.value) {
+            if (field.value && selectedCustomFieldIds.includes(field.idCustomField)) {
                 await api.setCustomFieldValue(token, appKey, newCard.id, field.idCustomField, field.value);
             }
         }

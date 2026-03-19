@@ -4,7 +4,7 @@ export type CopyableAttribute =
     | 'description'
     | 'due'
     | 'checklists'
-    | 'customFields';
+    | `customField:${string}`;
 
 export interface FactoryConfig {
     enabled: boolean;

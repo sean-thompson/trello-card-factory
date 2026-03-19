@@ -1,29 +1,50 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {Trello} from '../types/trello';
 import {FactoryConfig, CopyableAttribute} from '../types/factory';
 import {getFactoryConfig, setFactoryConfig} from '../lib/factory-config';
-import {COPYABLE_ATTRIBUTE_LABELS, DEFAULT_COPY_ATTRIBUTES} from '../lib/constants';
+import {ATTRIBUTE_GROUPS, DEFAULT_COPY_ATTRIBUTES, AttributeGroup} from '../lib/constants';
 
 interface Props {
     t: Trello.PowerUp.IFrame;
 }
 
-const ALL_ATTRIBUTES = Object.keys(COPYABLE_ATTRIBUTE_LABELS) as CopyableAttribute[];
+interface CustomField {
+    id: string;
+    name: string;
+    type: string;
+}
+
+function IndeterminateCheckbox({checked, indeterminate, onChange, ...props}: {
+    checked: boolean;
+    indeterminate: boolean;
+    onChange: () => void;
+    [key: string]: any;
+}) {
+    const ref = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (ref.current) {
+            ref.current.indeterminate = indeterminate;
+        }
+    }, [indeterminate]);
+    return <input ref={ref} type="checkbox" checked={checked} onChange={onChange} {...props} />;
+}
 
 function ConfigPopup({t}: Props) {
     const [enabled, setEnabled] = useState(false);
     const [copyAttributes, setCopyAttributes] = useState<CopyableAttribute[]>(DEFAULT_COPY_ATTRIBUTES);
     const [destinationListId, setDestinationListId] = useState('same');
     const [lists, setLists] = useState<Array<{id: string; name: string}>>([]);
+    const [customFields, setCustomFields] = useState<CustomField[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         async function load() {
             try {
-                const [config, boardLists] = await Promise.all([
+                const [config, boardLists, boardData] = await Promise.all([
                     getFactoryConfig(t),
                     t.lists('id', 'name'),
+                    t.board('customFields'),
                 ]);
                 if (config) {
                     setEnabled(config.enabled);
@@ -31,6 +52,9 @@ function ConfigPopup({t}: Props) {
                     setDestinationListId(config.destinationListId);
                 }
                 setLists(boardLists);
+                if (boardData && (boardData as any).customFields) {
+                    setCustomFields((boardData as any).customFields);
+                }
             } catch (err) {
                 console.error('Failed to load config:', err);
             }
@@ -39,12 +63,30 @@ function ConfigPopup({t}: Props) {
         load();
     }, [t]);
 
-    function toggleAttribute(attr: CopyableAttribute) {
+    const toggleAttribute = useCallback((attr: CopyableAttribute) => {
         setCopyAttributes(prev =>
             prev.includes(attr)
                 ? prev.filter(a => a !== attr)
                 : [...prev, attr]
         );
+    }, []);
+
+    const toggleGroup = useCallback((keys: CopyableAttribute[]) => {
+        setCopyAttributes(prev => {
+            const allSelected = keys.every(k => prev.includes(k));
+            if (allSelected) {
+                return prev.filter(a => !keys.includes(a));
+            } else {
+                return [...prev, ...keys.filter(k => !prev.includes(k))];
+            }
+        });
+    }, []);
+
+    function getGroupState(keys: CopyableAttribute[]): { checked: boolean; indeterminate: boolean } {
+        const count = keys.filter(k => copyAttributes.includes(k)).length;
+        if (count === 0) return { checked: false, indeterminate: false };
+        if (count === keys.length) return { checked: true, indeterminate: false };
+        return { checked: false, indeterminate: true };
     }
 
     async function handleSave() {
@@ -80,6 +122,75 @@ function ConfigPopup({t}: Props) {
         }
     }
 
+    function renderGroup(group: AttributeGroup) {
+        const keys = group.attributes.map(a => a.key);
+        const state = getGroupState(keys);
+
+        return (
+            <div key={group.label} style={{marginBottom: '8px'}}>
+                <label style={{display: 'block', margin: '4px 0', cursor: 'pointer', fontWeight: 600}}>
+                    <IndeterminateCheckbox
+                        checked={state.checked}
+                        indeterminate={state.indeterminate}
+                        onChange={() => toggleGroup(keys)}
+                        style={{marginRight: '8px'}}
+                    />
+                    {group.label}
+                </label>
+                <div style={{paddingLeft: '20px'}}>
+                    {group.attributes.map(attr => (
+                        <label key={attr.key} style={{display: 'block', margin: '2px 0', cursor: 'pointer'}}>
+                            <input
+                                type="checkbox"
+                                checked={copyAttributes.includes(attr.key)}
+                                onChange={() => toggleAttribute(attr.key)}
+                                style={{marginRight: '8px'}}
+                            />
+                            {attr.label}
+                        </label>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    function renderCustomFields() {
+        if (customFields.length === 0) return null;
+
+        const keys = customFields.map(f => `customField:${f.id}` as CopyableAttribute);
+        const state = getGroupState(keys);
+
+        return (
+            <div style={{marginBottom: '8px'}}>
+                <label style={{display: 'block', margin: '4px 0', cursor: 'pointer', fontWeight: 600}}>
+                    <IndeterminateCheckbox
+                        checked={state.checked}
+                        indeterminate={state.indeterminate}
+                        onChange={() => toggleGroup(keys)}
+                        style={{marginRight: '8px'}}
+                    />
+                    Custom Fields
+                </label>
+                <div style={{paddingLeft: '20px'}}>
+                    {customFields.map(field => {
+                        const key = `customField:${field.id}` as CopyableAttribute;
+                        return (
+                            <label key={field.id} style={{display: 'block', margin: '2px 0', cursor: 'pointer'}}>
+                                <input
+                                    type="checkbox"
+                                    checked={copyAttributes.includes(key)}
+                                    onChange={() => toggleAttribute(key)}
+                                    style={{marginRight: '8px'}}
+                                />
+                                {field.name}
+                            </label>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
     if (loading) {
         return <div style={{margin: '12px'}}>Loading...</div>;
     }
@@ -102,17 +213,8 @@ function ConfigPopup({t}: Props) {
             ) : (
                 <div>
                     <h4 style={{margin: '0 0 8px'}}>Copy from this card:</h4>
-                    {ALL_ATTRIBUTES.map(attr => (
-                        <label key={attr} style={{display: 'block', margin: '4px 0', cursor: 'pointer'}}>
-                            <input
-                                type="checkbox"
-                                checked={copyAttributes.includes(attr)}
-                                onChange={() => toggleAttribute(attr)}
-                                style={{marginRight: '8px'}}
-                            />
-                            {COPYABLE_ATTRIBUTE_LABELS[attr]}
-                        </label>
-                    ))}
+                    {ATTRIBUTE_GROUPS.map(group => renderGroup(group))}
+                    {renderCustomFields()}
 
                     <h4 style={{margin: '12px 0 8px'}}>Create new cards in:</h4>
                     <select
