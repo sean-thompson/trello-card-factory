@@ -78,7 +78,7 @@ function AttachmentSection({t}: Props) {
                 placeholder="Card name"
                 style={{
                     flex: 1,
-                    height: '24px',
+                    height: '32px',
                     padding: '0 6px',
                     margin: 0,
                     fontSize: '14px',
@@ -92,8 +92,8 @@ function AttachmentSection({t}: Props) {
                 disabled={busy || !cardName.trim()}
                 title="Create card"
                 style={{
-                    height: '24px',
-                    padding: '0 10px',
+                    height: '32px',
+                    padding: '0 24px',
                     margin: 0,
                     fontSize: '14px',
                     backgroundColor: '#5aac44',
