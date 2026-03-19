@@ -91,13 +91,17 @@ export async function createCardFromFactory(params: {
     if (!imageRes.ok) {
         throw new Error(`Failed to download image via proxy: ${imageRes.status}`);
     }
-    const imageBlob = await imageRes.blob();
+    const rawBlob = await imageRes.blob();
+    // Ensure the blob has the correct MIME type from the response
+    const contentType = imageRes.headers.get('Content-Type') || 'application/octet-stream';
+    const imageBlob = new Blob([rawBlob], { type: contentType });
 
     // Upload as a real file to the new card
     const newAttachment = await api.uploadAttachment(token, appKey, newCard.id, imageBlob, attachmentName);
 
-    // Set the image as the card cover
+    // Wait briefly for Trello to generate previews, then set as cover
     if (newAttachment && newAttachment.id) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
         await api.setCardCover(token, appKey, newCard.id, newAttachment.id);
     }
 
