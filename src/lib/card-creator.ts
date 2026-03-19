@@ -79,29 +79,16 @@ export async function createCardFromFactory(params: {
         }
     }
 
-    // Get the attachment details including preview URLs
-    const attachmentData = await api.getAttachment(token, appKey, factoryCardId, attachmentId);
-
-    // Find the best URL to use for the attachment
-    // Preview URLs are publicly accessible CDN links; the main url requires auth
-    let imageUrl = '';
-    if (attachmentData.previews && attachmentData.previews.length > 0) {
-        // Use the largest preview available
-        const sorted = [...attachmentData.previews].sort(
-            (a: any, b: any) => (b.width * b.height) - (a.width * a.height)
-        );
-        imageUrl = sorted[0].url;
+    // Download the image via our server-side proxy (avoids CORS)
+    const proxyUrl = `/trello-image?url=${encodeURIComponent(attachmentUrl)}&token=${encodeURIComponent(token)}`;
+    const imageRes = await fetch(proxyUrl);
+    if (!imageRes.ok) {
+        throw new Error(`Failed to download image via proxy: ${imageRes.status}`);
     }
+    const imageBlob = await imageRes.blob();
 
-    if (imageUrl) {
-        const newAttachment = await api.addAttachment(token, appKey, newCard.id, imageUrl, attachmentName);
-        // Set cover separately — the setCover flag on addAttachment fails with preview URLs
-        if (newAttachment && newAttachment.id) {
-            await api.setCardCover(token, appKey, newCard.id, newAttachment.id);
-        }
-    } else {
-        console.warn('No preview URLs available for attachment, skipping image copy');
-    }
+    // Upload as a real file to the new card (with cover)
+    await api.uploadAttachment(token, appKey, newCard.id, imageBlob, attachmentName);
 
     // Remove the image from the factory card
     await api.deleteAttachment(token, appKey, factoryCardId, attachmentId);
