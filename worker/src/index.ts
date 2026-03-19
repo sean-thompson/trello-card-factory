@@ -43,24 +43,51 @@ export default {
 		// Normalize to api.trello.com
 		parsed.hostname = 'api.trello.com';
 
-		const upstream = await fetch(parsed.toString(), {
-			headers: {
-				Authorization: `OAuth oauth_consumer_key="${env.POWERUP_APP_KEY}", oauth_token="${token}"`,
-			},
-			redirect: 'follow',
-		});
+		try {
+			// First request with auth — don't follow redirects so we can handle them
+			const authResponse = await fetch(parsed.toString(), {
+				headers: {
+					Authorization: `OAuth oauth_consumer_key="${env.POWERUP_APP_KEY}", oauth_token="${token}"`,
+				},
+				redirect: 'manual',
+			});
 
-		if (!upstream.ok) {
-			return new Response('Upstream request failed', { status: 502, headers: SECURITY_HEADERS });
+			// If redirect, follow it without auth header (S3/CDN doesn't need it)
+			if (authResponse.status >= 300 && authResponse.status < 400) {
+				const redirectUrl = authResponse.headers.get('Location');
+				if (!redirectUrl) {
+					return new Response('Redirect without location', { status: 502, headers: SECURITY_HEADERS });
+				}
+				const imageResponse = await fetch(redirectUrl);
+				if (!imageResponse.ok) {
+					return new Response(`Redirect target failed: ${imageResponse.status}`, { status: 502, headers: SECURITY_HEADERS });
+				}
+				return new Response(imageResponse.body, {
+					status: 200,
+					headers: {
+						...SECURITY_HEADERS,
+						'Content-Type': imageResponse.headers.get('Content-Type') || 'application/octet-stream',
+						'Cache-Control': 'private, max-age=3600',
+					},
+				});
+			}
+
+			if (!authResponse.ok) {
+				const body = await authResponse.text();
+				return new Response(`Upstream failed: ${authResponse.status} - ${body}`, { status: 502, headers: SECURITY_HEADERS });
+			}
+
+			// Direct response (no redirect)
+			return new Response(authResponse.body, {
+				status: 200,
+				headers: {
+					...SECURITY_HEADERS,
+					'Content-Type': authResponse.headers.get('Content-Type') || 'application/octet-stream',
+					'Cache-Control': 'private, max-age=3600',
+				},
+			});
+		} catch (err) {
+			return new Response(`Proxy error: ${err}`, { status: 502, headers: SECURITY_HEADERS });
 		}
-
-		return new Response(upstream.body, {
-			status: 200,
-			headers: {
-				...SECURITY_HEADERS,
-				'Content-Type': upstream.headers.get('Content-Type') || 'application/octet-stream',
-				'Cache-Control': 'private, max-age=3600',
-			},
-		});
 	},
 } satisfies ExportedHandler<Env>;
