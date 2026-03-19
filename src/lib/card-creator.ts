@@ -97,7 +97,6 @@ export async function createCardFromFactory(params: {
     const imageBlob = new Blob([rawBlob], { type: contentType });
 
     // Upload as a real file to the new card
-    console.log('[Card Factory] Image blob size:', imageBlob.size, 'type:', imageBlob.type);
     const newAttachment = await api.uploadAttachment(token, appKey, newCard.id, imageBlob, attachmentName);
 
     // Wait briefly for Trello to generate previews, then set as cover
