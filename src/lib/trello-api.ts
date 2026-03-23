@@ -124,13 +124,14 @@ export async function setCardCover(
     token: string,
     appKey: string,
     cardId: string,
-    attachmentId: string
+    attachmentId: string,
+    size: 'full' | 'normal' = 'normal'
 ): Promise<void> {
     const res = await fetch(apiUrl(`/cards/${cardId}`, token, appKey), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            cover: { idAttachment: attachmentId, size: 'full' }
+            cover: { idAttachment: attachmentId, size }
         }),
     });
     if (!res.ok) {

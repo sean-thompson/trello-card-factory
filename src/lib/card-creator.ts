@@ -23,7 +23,7 @@ export async function createCardFromFactory(params: {
     const factoryCardId = context.card as string;
 
     // Determine which fields to fetch from the factory card
-    const fields = ['idList'];
+    const fields = ['idList', 'cover'];
     if (config.copyAttributes.includes('description')) fields.push('desc');
     if (config.copyAttributes.includes('labels')) fields.push('idLabels');
     if (config.copyAttributes.includes('members')) fields.push('idMembers');
@@ -107,7 +107,8 @@ export async function createCardFromFactory(params: {
     // Wait briefly for Trello to generate previews, then set as cover
     if (newAttachment && newAttachment.id) {
         await new Promise(resolve => setTimeout(resolve, 2000));
-        await api.setCardCover(token, appKey, newCard.id, newAttachment.id);
+        const coverSize = sourceCard.cover?.size === 'full' ? 'full' : 'normal';
+        await api.setCardCover(token, appKey, newCard.id, newAttachment.id, coverSize);
     }
 
     // Remove the image from the factory card
