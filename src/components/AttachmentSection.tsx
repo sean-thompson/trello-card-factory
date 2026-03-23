@@ -75,6 +75,7 @@ function AttachmentSection({t}: Props) {
                 type="text"
                 value={cardName}
                 onChange={e => setCardName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
                 disabled={busy}
                 placeholder="Card name"
                 style={{
