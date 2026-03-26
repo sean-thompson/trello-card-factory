@@ -8,6 +8,18 @@ const ICON = {
 };
 
 window.TrelloPowerUp.initialize({
+    'show-settings': (t: any) => {
+        return t.popup({
+            title: 'How to use Card Factory',
+            items: [
+                {text: '1. Open any card on this board'},
+                {text: '2. Click the "Card Factory" button'},
+                {text: '3. Enable the factory and choose settings'},
+                {text: '4. Drop images onto the card to create new cards'},
+            ],
+        });
+    },
+
     'card-buttons': (t: any) => {
         return [{
             icon: ICON.dark,
